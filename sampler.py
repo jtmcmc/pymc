@@ -1,8 +1,12 @@
 import scipy as sp
 import numpy as np
 from numpy.random import multivariate_normal as gaussian
+from numpy.random
 from scipy.stats import norm
 
+#todo - make tabs 4 spaces this looks terrible
+# also abstract the array thing out check if dist is object or array
+# if array make a normalized anonymous function
 class Sampler:
 
 	#assumptions - if continuous returns either a float or Nx1 array 
@@ -30,14 +34,17 @@ class Sampler:
 		sample = gaussian(np.zeros(self.shape),cov)
 		#i'm going to use dot product because I know that works in the scalar case
 		#I believe it works in the vector space but I'm not sure - driving me crazy
-		for i in range(num_samples):
+		while len(samples) < num_samples:
 			proposal = gaussian(sample,cov)
-			proposal_prob = min(1, np.log(np.exp(
+			proposal_prob = min(1, np.exp(np.log(
 											np.dot(self.dist(proposal),self.dist(sample)) - 
 											np.dot(norm(),norm() ) //placeholders
 											)
 										)
 								)
+			if proposal_prob > np.random.rand:
+				samples.append(sample)
+				sample = proposal
 
 
 	def sample(self,num_samples,burn_in=0):
