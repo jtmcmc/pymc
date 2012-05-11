@@ -1,9 +1,8 @@
 import scipy as sp
 import numpy as np
 from numpy.random import multivariate_normal as gaussian
-from numpy.random
-from scipy.stats import norm
-
+from numpy.linalg import inv,slogdet
+from math import pi
 #todo - make tabs 4 spaces this looks terrible
 # also abstract the array thing out check if dist is object or array
 # if array make a normalized anonymous function
@@ -23,15 +22,30 @@ class Sampler:
 
 
 	def normalize(self,dist):
-		normalized_dist = np.sum(dist)
+		normalization_const = np.sum(dist)
 		if normalized_dist > 0:
 			return np.divide(dist,norm)
 		# if not raise error to do
 
+	#not currently checking if COV is PSD
+	#this will probably choke on a larger 
+	def gauss_pdf(self,point,mean,cov):
+		k = len(point)
+		sign,logdet = slogdet(cov)
+		logdet = sign*logdet 
+		return -.5*np.dot( 
+					np.dot(
+						np.transpose(point - mean),inv(cov)),
+						(point-mean)						
+					) - (k/2)*np.log(2*pi) + .5*logdet   
+
+	#we are assuming proposal distribution is always a standard gaussian
+	#could allow for cov to be set optionally
 	def cont_sample(self,num_samples,burn_in):
 		samples = []
 		cov = np.eye(self.shape)
 		sample = gaussian(np.zeros(self.shape),cov)
+
 		#i'm going to use dot product because I know that works in the scalar case
 		#I believe it works in the vector space but I'm not sure - driving me crazy
 		while len(samples) < num_samples:
