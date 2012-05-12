@@ -23,7 +23,9 @@ class Sampler:
 #self.dist = np.array(dist)
 #self.norm_dist = normalize(dist)
 #self.shape = dist.shape
-
+#def to test 
+    def make_dist(self,arr):
+        return lambda x: arr.item(tuple(x))
 
     def normalize(self,dist):
         normalization_const = np.sum(dist)
@@ -33,6 +35,7 @@ class Sampler:
 
     #not currently checking if COV is PSD
     #this will probably choke on a larger 
+    #expects that point / mean / cov are appropriate arrays
     def gauss_pdf(self,point,mean,cov):
         k = len(point)
         sign,logdet = slogdet(cov)
@@ -41,7 +44,7 @@ class Sampler:
                     np.dot(
                         np.transpose(point - mean),inv(cov)),
                         (point-mean)						
-                    ) - (k/2)*np.log(2*pi) + .5*logdet   
+                    ) - (k/2.0)*np.log(2.0*pi) + .5*logdet   
                 )
     #we are assuming proposal distribution is always a standard gaussian
     #could allow for cov to be set optionally
