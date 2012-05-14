@@ -3,6 +3,8 @@ import numpy as np
 from numpy.random import multivariate_normal as gaussian
 from numpy.linalg import inv,slogdet
 from math import pi
+from scipy.stats import norm
+import types
 #todo - make tabs 4 spaces this looks terrible
 #todo - MAKE TESTS
 #todo - make it accept either an array or a function
@@ -14,18 +16,23 @@ class Sampler:
 
     #assumptions - if continuous returns either a float or Nx1 array 
     #to do - error checking 
-    def __init__(self,dist,t="cont"):
-        if type == "cont":
+    def __init__(self,dist,size=1,t="cont"):
+        if t == 'discrete':
+            self.dist= self.make_dist(dist)
+            print  
+        if t == 'cont':
             self.dist = dist
-            self.t = t
-            self.shape = np.array(self.dist())
+        else:
+            raise TyepeError("'t accepts 'cont' or 'discrete'")
+        self.t = t
+        self.size = size
 
 #self.dist = np.array(dist)
 #self.norm_dist = normalize(dist)
 #self.shape = dist.shape
 #def to test 
     def make_dist(self,arr):
-        return lambda x: arr.item(tuple(x))
+        return lambda x: np.array(arr).item(tuple(x))
 
     def normalize(self,dist):
         normalization_const = np.sum(dist)
@@ -48,22 +55,23 @@ class Sampler:
                 )
     #we are assuming proposal distribution is always a standard gaussian
     #could allow for cov to be set optionally
-    def sample(self,num_samples,burn_in):
+    def sample(self,num_samples,burn_in=0):
         samples = []
-        cov = np.eye(self.shape)
-        sample = gaussian(np.zeros(self.shape),cov)
+        cov = np.eye(self.size)
+        sample = gaussian(np.zeros(self.size),cov)
 
         #i'm going to use dot product because I know that works in the scalar case
         #I believe it works in the vector space but I'm not sure - driving me crazy
         while len(samples) < num_samples:
             proposal = gaussian(sample,cov)
-            proposal_prob = min(1, np.exp(np.log(
-                                            np.dot(self.dist(proposal),self.dist(sample)) - 
-                                            np.dot(norm(),norm() ) //placeholders
-                                            )
-                                        )
+            
+            proposal_prob = min(1, np.exp(np.log(self.dist(proposal)) + 
+                                    np.log(self.gauss_pdf(sample,proposal,cov)) -
+                                    np.log(self.dist(sample)) -
+                                    np.log(self.gauss_pdf(proposal,sample,cov))
                                     )
-            if proposal_prob > np.random.rand:
+                                )
+            if proposal_prob > np.random.rand():
                 samples.append(sample)
                 sample = proposal
         return samples
